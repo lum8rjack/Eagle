@@ -3,9 +3,13 @@
 ## Overview
 Eagle is a quick and portable TCP scanner written in Go. It provides some basic functionality like reading a list of hosts, saving the results to a file, and adjusting the timeout and number of hosts to scan concurrently.
 
-## Install
+## Requirements
 Eagle is written in Go and only uses the standard library. Once Go is installed, you can build the binary using Make.
 
+Example:
+```bash
+make linux
+```
 
 ## Examples
 Eagle requires you to provide either a host or file containing hosts to scan, and which ports to scan for.
