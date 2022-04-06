@@ -89,7 +89,10 @@ func CheckPorts(ports []string) ([]int, error) {
 	for _, p := range ports {
 		portInt, err := strconv.Atoi(p)
 		if err == nil {
-			results = append(results, portInt)
+			// Make sure it is a valid port number
+			if portInt >= 1 && portInt <= 65535 {
+				results = append(results, portInt)
+			}
 		}
 	}
 
