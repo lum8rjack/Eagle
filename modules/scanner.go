@@ -40,6 +40,10 @@ func CheckCIDR(line string) []string {
 	// Convert CIDR to list of IPs
 	if strings.Contains(line, "/") {
 		ips = cidrHosts(line)
+	} else if line == "" {
+		return ips
+	} else if !strings.Contains(line, ".") {
+		return ips
 	} else {
 		ips = append(ips, line)
 	}
