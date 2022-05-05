@@ -24,6 +24,45 @@ type ScanResult struct {
 	State string
 }
 
+// Check that the CIDR/IP only contains
+// specific characters/numbers, is less
+// than 19 characters, and is a valid format
+func isValidStringCIDR(cidr string) bool {
+	// Must contain a /, and . and be less than 19 characters
+	if !strings.Contains(cidr, "/") || !strings.Contains(cidr, ".") || len(cidr) > 18 {
+		return false
+	}
+
+	// Keep track of the number of
+	// . and / characters
+	periods := 0
+	slash := 0
+
+	// Only valid characters
+	valid := "0123456789./"
+	s := strings.Split(cidr, "")
+	if s[0] == "0" {
+		return false
+	}
+	for _, c := range s {
+		if !strings.Contains(valid, c) {
+			return false
+		}
+		if c == "." {
+			periods++
+		} else if c == "/" {
+			slash++
+		}
+	}
+
+	// Make sure there are 3 periods and 1 slash
+	if slash != 1 || periods != 3 {
+		return false
+	}
+
+	return true
+}
+
 // Check if the provide string is a CIDR range
 func CheckCIDR(line string) []string {
 	var ips []string
@@ -36,9 +75,10 @@ func CheckCIDR(line string) []string {
 		line = strings.TrimPrefix(line, "http://")
 	}
 
-	// Check if single host contains '/'
+	// Check if single host contains '/' and the length
+	// is less than 18 (ex. 192.168.100.100/24)
 	// Convert CIDR to list of IPs
-	if strings.Contains(line, "/") {
+	if isValidStringCIDR(line) {
 		ips = cidrHosts(line)
 	} else if line == "" {
 		return ips
@@ -108,8 +148,7 @@ func cidrHosts(netw string) []string {
 	// convert string to IPNet struct
 	_, ipv4Net, err := net.ParseCIDR(netw)
 	if err != nil {
-		fmt.Printf("Invalid CIDR address: %s\n", netw)
-		os.Exit(1)
+		return []string{}
 	}
 	// Convert IPNet struct mask and address to uint32
 	mask := binary.BigEndian.Uint32(ipv4Net.Mask)
@@ -119,6 +158,15 @@ func cidrHosts(netw string) []string {
 	finish := (start & mask) | (mask ^ 0xffffffff)
 	// Make a slice to return host addresses
 	var hosts []string
+
+	// Limit how many IPs we can scan
+	// We can only take a /16
+	n := (int)(finish - start)
+	max := 65536
+	if n > max {
+		return []string{}
+	}
+
 	// Loop through addresses as uint32
 	// Used "start + 1" and "finish - 1" to discard the network and broadcast addresses.
 	for i := start + 1; i <= finish-1; i++ {
@@ -129,6 +177,7 @@ func cidrHosts(netw string) []string {
 		hosts = append(hosts, ip.String())
 	}
 	// Return a slice of strings containing IP addresses
+	fmt.Printf("Len: %d\n", len(hosts))
 	return hosts
 }
 

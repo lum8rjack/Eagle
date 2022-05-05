@@ -56,6 +56,16 @@ func TestCheckCIDR_RandonString(t *testing.T) {
 	}
 }
 
+// Fuzz the CheckCIDR function which takes
+// one argument of an array of strings (ports)
+// and converts it to an array of ints
+func FuzzCheckCIDR(f *testing.F) {
+	f.Add("10.10.10.0/24")
+	f.Fuzz(func(t *testing.T, s string) {
+		CheckCIDR(s)
+	})
+}
+
 // TestCheckPorts_InvalidPort calls scanner.ChecPorts with
 // a list of ports that contains a number
 // outside of a valid range
@@ -94,4 +104,19 @@ func TestCheckPorts_RandomString(t *testing.T) {
 	if len(p) != n {
 		t.Fatalf("CheckPorts response length = %d, should equal %d\n", len(ports), n)
 	}
+}
+
+// Fuzz the CheckPorts function which takes
+// one argument of an array of strings (ports)
+// and converts it to an array of ints
+func FuzzCheckPorts(f *testing.F) {
+	f.Add("443")
+	f.Fuzz(func(t *testing.T, s string) {
+		p, err := CheckPorts([]string{s})
+		if err != nil {
+			t.Errorf("Fuzzing error: %s\n", err)
+		} else if len(p) > 1 {
+			t.Errorf("Fuzzing error wrong length (%d) with input []string{\"%s\"}\n", len(p), s)
+		}
+	})
 }
