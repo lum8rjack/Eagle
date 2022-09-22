@@ -12,7 +12,10 @@ import (
 	"time"
 )
 
-var SCANTIMEOUT = 30
+var (
+	SCANTIMEOUT = 30
+	NUMIPS      = 0
+)
 
 type Host struct {
 	Hostname string
@@ -176,8 +179,12 @@ func cidrHosts(netw string) []string {
 		binary.BigEndian.PutUint32(ip, i)
 		hosts = append(hosts, ip.String())
 	}
+
+	// Output how many IPs and ports will be scanned
+	fmt.Printf("Number of IPs to scan: %d\n", len(hosts))
+	fmt.Printf("Number of ports to scan: %d\n", len(hosts)*NUMIPS)
+
 	// Return a slice of strings containing IP addresses
-	fmt.Printf("Len: %d\n", len(hosts))
 	return hosts
 }
 

@@ -17,8 +17,8 @@ func main() {
 	output_file := flag.String("output", "", "File to save the results")
 	only_open := flag.Bool("open", false, "Only output open ports (default false)")
 	selected_ports := flag.String("p", "", "Ports to scan (comma separated)")
-	threads := flag.Int("threads", 20, "Number of hosts to scan concurrently")
-	timeout := flag.Int("timeout", 5, "Timeout in seconds for each scanned port")
+	threads := flag.Int("threads", 25, "Number of hosts to scan concurrently")
+	timeout := flag.Int("timeout", 3, "Timeout in seconds for each scanned port")
 
 	flag.Parse()
 
@@ -54,6 +54,7 @@ func main() {
 		fmt.Println("Error parsing list of ports")
 		os.Exit(1)
 	}
+	modules.NUMIPS = len(portsInt)
 
 	var ipList []string
 
@@ -67,6 +68,9 @@ func main() {
 	// Setup number of go routines
 	var wg sync.WaitGroup
 	sem := make(chan int, *threads)
+
+	// Keep track of open ports
+	openPorts := 0
 
 	// Start scanning
 	logger.Start()
@@ -86,6 +90,7 @@ func main() {
 				if *only_open {
 					if p.State == "Open" {
 						data = fmt.Sprintf("%s:%d %s\n", host.Hostname, p.Port, p.State)
+						openPorts++
 					}
 				} else {
 					data = fmt.Sprintf("%s:%d %s\n", host.Hostname, p.Port, p.State)
@@ -102,4 +107,8 @@ func main() {
 
 	// Scanning completed
 	logger.Stop()
+
+	// Log how many ports were open
+	fmt.Printf("Number of open ports: %v\n", openPorts)
+
 }
