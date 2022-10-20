@@ -1,3 +1,3 @@
-module eagle
+module github.com/lum8rjack/Eagle
 
-go 1.18
+go 1.19
