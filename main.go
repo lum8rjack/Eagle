@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"eagle/modules"
+	"github.com/lum8rjack/Eagle/modules"
 )
 
 func main() {
